@@ -11,9 +11,27 @@ public class GameManager : MonoBehaviour
     public float teacherAttention = 0f;
     public float maxTeacherAttention = 100f;
 
+    [Header("Attention Decay")]
+    public float attentionDecayAmount = 5f;
+    public float attentionDecayInterval = 0.5f;
+
+    [Header("Game State")]
+    public bool isGameOver = false;
+
     [Header("UI")]
     public TextMeshProUGUI scoreText;
     public Slider attentionSlider;
+
+    [Header("References")]
+    public TeacherController teacherController;
+    public Transform playerCameraTransform;
+    public MonoBehaviour firstPersonControllerScript;
+    public InteractionController interactionController;
+
+    [Header("Game Over Camera")]
+    public Vector3 gameOverCameraEuler = new Vector3(0f, 10f, 0f);
+
+    private float attentionDecayTimer = 0f;
 
     void Awake()
     {
@@ -32,14 +50,25 @@ public class GameManager : MonoBehaviour
         UpdateUI();
     }
 
+    void Update()
+    {
+        if (isGameOver) return;
+
+        HandleAttentionDecay();
+    }
+
     public void AddScore(float amount)
     {
+        if (isGameOver) return;
+
         score += amount;
         UpdateUI();
     }
 
     public void AddTeacherAttention(float amount)
     {
+        if (isGameOver) return;
+
         teacherAttention += amount;
         teacherAttention = Mathf.Clamp(teacherAttention, 0f, maxTeacherAttention);
         UpdateUI();
@@ -47,10 +76,62 @@ public class GameManager : MonoBehaviour
 
     public void AddInteractionValues(float scoreAmount, float attentionAmount)
     {
+        if (isGameOver) return;
+
         score += scoreAmount;
         teacherAttention += attentionAmount;
         teacherAttention = Mathf.Clamp(teacherAttention, 0f, maxTeacherAttention);
         UpdateUI();
+    }
+
+    public bool PlayerIsHoldingObject()
+    {
+        if (interactionController == null) return false;
+        return interactionController.IsHoldingObject();
+    }
+
+    void HandleAttentionDecay()
+    {
+        if (PlayerIsHoldingObject())
+        {
+            attentionDecayTimer = 0f;
+            return;
+        }
+
+        attentionDecayTimer += Time.deltaTime;
+
+        if (attentionDecayTimer >= attentionDecayInterval)
+        {
+            teacherAttention -= attentionDecayAmount;
+            teacherAttention = Mathf.Clamp(teacherAttention, 0f, maxTeacherAttention);
+
+            attentionDecayTimer = 0f;
+            UpdateUI();
+        }
+    }
+
+    public void TriggerGameOver()
+    {
+        if (isGameOver) return;
+
+        isGameOver = true;
+
+        if (firstPersonControllerScript != null)
+        {
+            firstPersonControllerScript.enabled = false;
+        }
+
+        if (playerCameraTransform != null)
+        {
+            playerCameraTransform.localRotation = Quaternion.Euler(gameOverCameraEuler);
+        }
+
+        if (teacherController != null)
+        {
+            teacherController.PlayCatchSequence();
+        }
+
+        Debug.Log("Game Over");
     }
 
     void UpdateUI()

@@ -33,6 +33,11 @@ public class InteractionController : MonoBehaviour
 
     private Coroutine interactionCoroutine;
 
+    public bool IsHoldingObject()
+    {
+        return heldObject != null;
+    }
+
     void Start()
     {
         if (promptUI != null)
