@@ -1088,6 +1088,10 @@ PrefabInstance:
     serializedVersion: 3
     m_TransformParent: {fileID: 0}
     m_Modifications:
+    - target: {fileID: 1037144403861006, guid: 36612fe48d89884428b7015e4f5b0a3e, type: 3}
+      propertyPath: m_IsActive
+      value: 0
+      objectReference: {fileID: 0}
     - target: {fileID: 1366698415426578, guid: 36612fe48d89884428b7015e4f5b0a3e, type: 3}
       propertyPath: m_Name
       value: man-business
@@ -1095,6 +1099,10 @@ PrefabInstance:
     - target: {fileID: 1366698415426578, guid: 36612fe48d89884428b7015e4f5b0a3e, type: 3}
       propertyPath: m_IsActive
       value: 1
+      objectReference: {fileID: 0}
+    - target: {fileID: 1898946509486360, guid: 36612fe48d89884428b7015e4f5b0a3e, type: 3}
+      propertyPath: m_IsActive
+      value: 0
       objectReference: {fileID: 0}
     - target: {fileID: 4221285312857772, guid: 36612fe48d89884428b7015e4f5b0a3e, type: 3}
       propertyPath: m_LocalScale.x
