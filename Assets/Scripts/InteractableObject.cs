@@ -10,10 +10,13 @@ public class InteractableObject : MonoBehaviour
     public float scorePerTick = 1f;
     public float attentionPerTick = 1f;
 
+    [Header("Hide Under Table")]
+    public bool isHiddenUnderTable = false;
+    public float hiddenAttentionMultiplier = 0.5f;
+
     [HideInInspector] public Vector3 originalPosition;
     [HideInInspector] public Quaternion originalRotation;
     [HideInInspector] public Transform originalParent;
-
     [HideInInspector] public bool isBeingHeld = false;
 
     public void SaveOriginalState()
@@ -29,5 +32,16 @@ public class InteractableObject : MonoBehaviour
         transform.position = originalPosition;
         transform.rotation = originalRotation;
         isBeingHeld = false;
+        isHiddenUnderTable = false;
+    }
+
+    public float GetCurrentAttentionPerTick()
+    {
+        if (isHiddenUnderTable)
+        {
+            return attentionPerTick * hiddenAttentionMultiplier;
+        }
+
+        return attentionPerTick;
     }
 }
