@@ -172,7 +172,7 @@ public class InteractionController : MonoBehaviour
             {
                 GameManager.Instance.AddInteractionValues(
                     obj.scorePerTick,
-                    obj.attentionPerTick
+                    obj.GetCurrentAttentionPerTick()
                 );
             }
 

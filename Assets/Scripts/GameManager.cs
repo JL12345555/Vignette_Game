@@ -71,6 +71,8 @@ public class GameManager : MonoBehaviour
 
         teacherAttention += amount;
         teacherAttention = Mathf.Clamp(teacherAttention, 0f, maxTeacherAttention);
+
+        CheckAttentionGameOver();
         UpdateUI();
     }
 
@@ -81,6 +83,8 @@ public class GameManager : MonoBehaviour
         score += scoreAmount;
         teacherAttention += attentionAmount;
         teacherAttention = Mathf.Clamp(teacherAttention, 0f, maxTeacherAttention);
+
+        CheckAttentionGameOver();
         UpdateUI();
     }
 
@@ -107,6 +111,14 @@ public class GameManager : MonoBehaviour
 
             attentionDecayTimer = 0f;
             UpdateUI();
+        }
+    }
+
+    void CheckAttentionGameOver()
+    {
+        if (teacherAttention >= maxTeacherAttention)
+        {
+            TriggerGameOver();
         }
     }
 
