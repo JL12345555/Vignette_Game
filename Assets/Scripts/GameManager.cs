@@ -251,21 +251,21 @@ public class GameManager : MonoBehaviour
 
     string GetEndMessageByScore()
     {
-        if (score < 20)
+        if (score < 100)
         {
-            return "You stayed pretty focused in class.";
+            return "You are lame. Just listen to the class"
         }
-        else if (score < 50)
+        else if (score < 200)
         {
-            return "You goofed off a little, but kept it under control.";
+            return "Come on! Go harder"
         }
-        else if (score < 80)
+        else if (score < 300)
         {
-            return "You spent most of class getting distracted.";
+            return "You are cooking."
         }
         else
         {
-            return "You completely gave up on paying attention.";
+            return "You are the ultimate chamption of distraction"
         }
     }
 
