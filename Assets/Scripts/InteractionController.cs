@@ -113,6 +113,7 @@ public class InteractionController : MonoBehaviour
         }
 
         StartInteractionTick(heldObject);
+        heldObject.PlayLoopSound();
         HidePrompt();
     }
 

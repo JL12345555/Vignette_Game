@@ -27,10 +27,15 @@ public class TeacherController : MonoBehaviour
     [Header("Game Over")]
     public Transform catchPoint;
 
+    [Header("Audio")]
+    public AudioSource talkingAudioSource;
+    public AudioSource flyKickAudioSource;
+
     private Transform[] patrolPoints;
     private int currentPatrolIndex = 0;
     private TeacherState currentState;
     private Coroutine talkCoroutine;
+    private bool hasStartedRoutine = false;
 
     void Start()
     {
@@ -52,11 +57,14 @@ public class TeacherController : MonoBehaviour
         transform.position = patrolPoints[0].position;
         transform.rotation = patrolPoints[0].rotation;
 
-        EnterTalkingState();
+        StopTalkingSound();
+        SetAnimatorState(false, false);
     }
 
     void Update()
     {
+        if (!hasStartedRoutine) return;
+
         if (GameManager.Instance != null && GameManager.Instance.isGameOver)
             return;
 
@@ -64,6 +72,15 @@ public class TeacherController : MonoBehaviour
         {
             CheckPatrolProgress();
         }
+    }
+
+    public void BeginTeacherRoutine()
+    {
+        if (hasStartedRoutine) return;
+        if (GameManager.Instance != null && GameManager.Instance.isGameOver) return;
+
+        hasStartedRoutine = true;
+        EnterTalkingState();
     }
 
     void SetupPatrolPoints()
@@ -99,6 +116,8 @@ public class TeacherController : MonoBehaviour
         SetAnimatorState(true, false);
         transform.rotation = patrolPoints[0].rotation;
 
+        PlayTalkingSound();
+
         if (talkCoroutine != null)
             StopCoroutine(talkCoroutine);
 
@@ -126,6 +145,8 @@ public class TeacherController : MonoBehaviour
 
         currentState = TeacherState.Patrolling;
         currentPatrolIndex = 1;
+
+        StopTalkingSound();
 
         if (agent != null)
         {
@@ -161,6 +182,8 @@ public class TeacherController : MonoBehaviour
 
         currentState = TeacherState.Returning;
 
+        StopTalkingSound();
+
         if (agent != null)
         {
             agent.isStopped = false;
@@ -195,6 +218,7 @@ public class TeacherController : MonoBehaviour
             StopCoroutine(talkCoroutine);
 
         StopAllCoroutines();
+        StopTalkingSound();
 
         if (agent != null)
         {
@@ -215,6 +239,8 @@ public class TeacherController : MonoBehaviour
         {
             animator.SetTrigger("flykick");
         }
+
+        PlayFlyKickSound();
     }
 
     void SetAnimatorState(bool isTalking, bool isWalking)
@@ -225,13 +251,42 @@ public class TeacherController : MonoBehaviour
         animator.SetBool("isWalking", isWalking);
     }
 
-    void OnTriggerEnter(Collider other)
+    void PlayTalkingSound()
+    {
+        if (talkingAudioSource == null) return;
+
+        talkingAudioSource.loop = true;
+
+        if (!talkingAudioSource.isPlaying)
+        {
+            talkingAudioSource.Play();
+        }
+    }
+
+    void StopTalkingSound()
+    {
+        if (talkingAudioSource == null) return;
+
+        if (talkingAudioSource.isPlaying)
+        {
+            talkingAudioSource.Stop();
+        }
+    }
+
+    void PlayFlyKickSound()
+    {
+        if (flyKickAudioSource == null) return;
+
+        flyKickAudioSource.loop = false;
+        flyKickAudioSource.Play();
+    }
+
+    void OnTriggerStay(Collider other)
     {
         if (GameManager.Instance == null) return;
         if (GameManager.Instance.isGameOver) return;
 
         if (!other.CompareTag("Player")) return;
-
         if (!GameManager.Instance.PlayerIsHoldingObject()) return;
 
         GameManager.Instance.TriggerGameOver();

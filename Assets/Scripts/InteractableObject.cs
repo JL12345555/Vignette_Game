@@ -14,6 +14,9 @@ public class InteractableObject : MonoBehaviour
     public bool isHiddenUnderTable = false;
     public float hiddenAttentionMultiplier = 0.5f;
 
+    [Header("Loop Sound")]
+    public AudioSource loopAudioSource;
+
     [HideInInspector] public Vector3 originalPosition;
     [HideInInspector] public Quaternion originalRotation;
     [HideInInspector] public Transform originalParent;
@@ -33,6 +36,8 @@ public class InteractableObject : MonoBehaviour
         transform.rotation = originalRotation;
         isBeingHeld = false;
         isHiddenUnderTable = false;
+        StopLoopSound();
+
     }
 
     public float GetCurrentAttentionPerTick()
@@ -43,5 +48,27 @@ public class InteractableObject : MonoBehaviour
         }
 
         return attentionPerTick;
+    }
+
+    public void PlayLoopSound()
+    {
+        if (loopAudioSource == null) return;
+
+        loopAudioSource.loop = true;
+
+        if (!loopAudioSource.isPlaying)
+        {
+            loopAudioSource.Play();
+        }
+    }
+
+    public void StopLoopSound()
+    {
+        if (loopAudioSource == null) return;
+
+        if (loopAudioSource.isPlaying)
+        {
+            loopAudioSource.Stop();
+        }
     }
 }
