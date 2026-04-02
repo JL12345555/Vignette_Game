@@ -17,6 +17,11 @@ ModelImporter:
   - first:
       type: UnityEngine:Material
       assembly: UnityEngine.CoreModule
+      name: mat5
+    second: {fileID: 2100000, guid: 194d437b4c045ba4cabc3b40641bf0ab, type: 2}
+  - first:
+      type: UnityEngine:Material
+      assembly: UnityEngine.CoreModule
       name: mat8
     second: {fileID: 2100000, guid: 59c0a691cf8639c459d53c9b7bf00da3, type: 2}
   materials:
