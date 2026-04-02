@@ -253,19 +253,19 @@ public class GameManager : MonoBehaviour
     {
         if (score < 100)
         {
-            return "You are lame. Just listen to the class"
+            return "You are lame. Just listen to the class";
         }
         else if (score < 200)
         {
-            return "Come on! Go harder"
+            return "Come on! Go harder";
         }
         else if (score < 300)
         {
-            return "You are cooking."
+            return "You are cooking.";
         }
         else
         {
-            return "You are the ultimate chamption of distraction"
+            return "You are the ultimate chamption of distraction";
         }
     }
 
