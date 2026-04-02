@@ -1,6 +1,7 @@
 using UnityEngine;
 using TMPro;
 using UnityEngine.UI;
+using UnityEngine.SceneManagement;
 
 public class GameManager : MonoBehaviour
 {
@@ -15,12 +16,33 @@ public class GameManager : MonoBehaviour
     public float attentionDecayAmount = 5f;
     public float attentionDecayInterval = 0.5f;
 
+    [Header("Start Panel")]
+    public GameObject startPanel;
+    public TextMeshProUGUI startCountdownText;
+    public float startPanelDuration = 10f;
+    private float currentStartPanelTime;
+    public bool isStartPanelActive = true;
+
+    [Header("Timer")]
+    public float roundTime = 60f;
+    private float currentTime;
+    public bool isTimeUp = false;
+
     [Header("Game State")]
     public bool isGameOver = false;
 
     [Header("UI")]
     public TextMeshProUGUI scoreText;
     public Slider attentionSlider;
+    public TextMeshProUGUI timerText;
+
+    [Header("Time Up UI")]
+    public GameObject endPanel;
+    public TextMeshProUGUI endText;
+
+    [Header("Game Over UI")]
+    public TextMeshProUGUI gameOverText;
+    [TextArea] public string gameOverMessage = "Game Over";
 
     [Header("References")]
     public TeacherController teacherController;
@@ -43,23 +65,54 @@ public class GameManager : MonoBehaviour
         {
             Destroy(gameObject);
         }
+
+        if (gameOverText != null)
+        gameOverText.gameObject.SetActive(false);
     }
 
     void Start()
     {
+        Time.timeScale = 1f;
+
+        currentTime = roundTime;
+        currentStartPanelTime = startPanelDuration;
+
+        if (endPanel != null)
+            endPanel.SetActive(false);
+
+
+        if (startPanel != null)
+            startPanel.SetActive(true);
+
+        isStartPanelActive = true;
+        Time.timeScale = 0f;
+
         UpdateUI();
+        UpdateStartPanelUI();
     }
 
     void Update()
     {
-        if (isGameOver) return;
+        if (Input.GetKeyDown(KeyCode.R))
+        {
+            RestartGame();
+        }
+
+        if (isStartPanelActive)
+        {
+            HandleStartPanel();
+            return;
+        }
+
+        if (isGameOver || isTimeUp) return;
 
         HandleAttentionDecay();
+        HandleTimer();
     }
 
     public void AddScore(float amount)
     {
-        if (isGameOver) return;
+        if (isGameOver || isTimeUp || isStartPanelActive) return;
 
         score += amount;
         UpdateUI();
@@ -67,7 +120,7 @@ public class GameManager : MonoBehaviour
 
     public void AddTeacherAttention(float amount)
     {
-        if (isGameOver) return;
+        if (isGameOver || isTimeUp || isStartPanelActive) return;
 
         teacherAttention += amount;
         teacherAttention = Mathf.Clamp(teacherAttention, 0f, maxTeacherAttention);
@@ -78,7 +131,7 @@ public class GameManager : MonoBehaviour
 
     public void AddInteractionValues(float scoreAmount, float attentionAmount)
     {
-        if (isGameOver) return;
+        if (isGameOver || isTimeUp || isStartPanelActive) return;
 
         score += scoreAmount;
         teacherAttention += attentionAmount;
@@ -92,6 +145,55 @@ public class GameManager : MonoBehaviour
     {
         if (interactionController == null) return false;
         return interactionController.IsHoldingObject();
+    }
+
+    public void RestartGame()
+    {
+        Time.timeScale = 1f;
+        SceneManager.LoadScene(SceneManager.GetActiveScene().buildIndex);
+    }
+    void HandleStartPanel()
+    {
+        if (Input.GetKeyDown(KeyCode.E))
+        {
+            EndStartPanel();
+            return;
+        }
+
+        currentStartPanelTime -= Time.unscaledDeltaTime;
+        currentStartPanelTime = Mathf.Max(currentStartPanelTime, 0f);
+
+        UpdateStartPanelUI();
+
+        if (currentStartPanelTime <= 0f)
+        {
+            EndStartPanel();
+        }
+    }
+
+    void EndStartPanel()
+    {
+        if (!isStartPanelActive) return;
+
+        isStartPanelActive = false;
+
+        if (startPanel != null)
+            startPanel.SetActive(false);
+
+        Time.timeScale = 1f;
+
+        if (teacherController != null)
+        {
+            teacherController.BeginTeacherRoutine();
+        }
+    }
+
+    void UpdateStartPanelUI()
+    {
+        if (startCountdownText != null)
+        {
+            startCountdownText.text = "Class starts in: " + Mathf.CeilToInt(currentStartPanelTime) + "\nPress E to skip";
+        }
     }
 
     void HandleAttentionDecay()
@@ -114,6 +216,59 @@ public class GameManager : MonoBehaviour
         }
     }
 
+    void HandleTimer()
+    {
+        currentTime -= Time.deltaTime;
+        currentTime = Mathf.Max(currentTime, 0f);
+
+        UpdateUI();
+
+        if (currentTime <= 0f)
+        {
+            TimeUp();
+        }
+    }
+
+    void TimeUp()
+    {
+        if (isTimeUp) return;
+
+        isTimeUp = true;
+
+        if (firstPersonControllerScript != null)
+        {
+            firstPersonControllerScript.enabled = false;
+        }
+
+        Time.timeScale = 0f;
+
+        if (endPanel != null)
+            endPanel.SetActive(true);
+
+        if (endText != null)
+            endText.text = GetEndMessageByScore();
+    }
+
+    string GetEndMessageByScore()
+    {
+        if (score < 20)
+        {
+            return "You stayed pretty focused in class.";
+        }
+        else if (score < 50)
+        {
+            return "You goofed off a little, but kept it under control.";
+        }
+        else if (score < 80)
+        {
+            return "You spent most of class getting distracted.";
+        }
+        else
+        {
+            return "You completely gave up on paying attention.";
+        }
+    }
+
     void CheckAttentionGameOver()
     {
         if (teacherAttention >= maxTeacherAttention)
@@ -124,7 +279,7 @@ public class GameManager : MonoBehaviour
 
     public void TriggerGameOver()
     {
-        if (isGameOver) return;
+        if (isGameOver || isTimeUp || isStartPanelActive) return;
 
         isGameOver = true;
 
@@ -143,7 +298,12 @@ public class GameManager : MonoBehaviour
             teacherController.PlayCatchSequence();
         }
 
-        Debug.Log("Game Over");
+        if (gameOverText != null)
+        {
+            gameOverText.gameObject.SetActive(true);
+            gameOverText.text = gameOverMessage;
+        }
+
     }
 
     void UpdateUI()
@@ -157,6 +317,11 @@ public class GameManager : MonoBehaviour
         {
             attentionSlider.maxValue = maxTeacherAttention;
             attentionSlider.value = teacherAttention;
+        }
+
+        if (timerText != null)
+        {
+            timerText.text = "Time: " + Mathf.CeilToInt(currentTime).ToString();
         }
     }
 }
